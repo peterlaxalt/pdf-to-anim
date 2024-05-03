@@ -4,6 +4,10 @@ import sys
 import os.path
 import imageio
 import numpy as np
+from natsort import natsorted
+import cv2
+from converter import Converter
+import logging
 
 # os.environ["IMAGEIO_FFMPEG_EXE"] = "/usr/bin/ffmpeg"
 import moviepy.editor as mp
@@ -64,16 +68,16 @@ def mergeImagesToGif(folder_path, gif_path, duration):
     print("\033[92m" + "[INFO] folder_path:", folder_path)
     print("\033[92m" + "[INFO] gif_path:", gif_path)
     print("\033[92m" + "[INFO] duration:", duration)
-    print("\033[92m" + "os.listdir(folder_path):", sorted(os.listdir(folder_path)))
 
-    sortedDirectory = sorted(os.listdir(folder_path))
+    sortedDirectory = natsorted(os.listdir(folder_path))
     images = []
 
     for filename in sortedDirectory:
-        print("\033[92m" + "[INFO] Checking file: " + filename)
-        file_path = os.path.join(folder_path, filename)
+        if filename.endswith(".png") or filename.endswith(".jpg"):
+          print("\033[92m" + "[INFO] Checking file: " + filename)
+          file_path = os.path.join(folder_path, filename)
 
-        images.append(imageio.imread(file_path))
+          images.append(imageio.imread(file_path))
         
 
     if os.path.exists(gif_path):
@@ -89,10 +93,54 @@ def mergeImagesToGif(folder_path, gif_path, duration):
 def gifToMp4(path): 
     print("\033[92m" + "[INFO] gifToMp4 initializing")
     print("\033[92m" + "[INFO] path", path)
-    print("\033[92m" + "[INFO] os.path.splitext(path)[0]+'.mp4'", os.path.splitext(path)[0]+'.mp4')
+
+    filePath = os.path.splitext(path)[0]+'_original.mp4'
+
+    print("\033[92m" + "[INFO] filePath: ", filePath)
 
     clip = mp.VideoFileClip((path))
-    clip.write_videofile(os.path.splitext(path)[0]+'.mp4')
+    clip.write_videofile(filePath)
+    # encodeh264(filePath)
+
+################################################################################
+
+# logging.basicConfig(level=logging.INFO)
+
+# logging.info("Converting annotated video")
+# Converting video to h264 codec format
+# conv = Converter()
+# Video file that needs to be converted
+# def encodeh264(videoFile):
+#     print("\033[92m" + "[INFO] encodeh264 initialized: ", videoFile)
+
+#     """
+#     Args: 
+#     videoFile: mp4 file path
+#     """
+#     info = conv.probe(videoFile)
+#     # new compressed file
+#     cap = cv2.VideoCapture()
+#     source_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+#     source_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+#     fps = cap.get(cv2.CAP_PROP_FPS)
+#     shape = (source_h, source_w)
+#     converted_video = '/'.join(
+#         videoFile.split('/')[:-1])+'/output_libxh264.mp4'
+#     convert = conv.convert(videoFile, converted_video, {
+#         'format': 'mp4',
+#         'audio': {
+#             'codec': 'aac',
+#             'samplerate': 11025,
+#             'channels': 2
+#         },
+#         'video': {
+#             'codec': 'h264',
+#             'width': source_w,
+#             'height': source_h,
+#             'fps': fps
+#         }})
+#     for timecode in convert:
+#         logging.info(f'\rConverting ({timecode:.2f}) ...')
 
 ################################################################################
 
@@ -114,14 +162,11 @@ if __name__ == "__main__":
     combined_frame_dir = "".join((sys.argv[2], frames_directory))
     combined_gif_dir = "".join((sys.argv[2], "output.gif"))
 
-    # print("sys.argv[1:]", sys.argv[1:])
-    # print("sys.argv[1]", sys.argv[1])
-    # print("sys.argv[2]", sys.argv[2])
-    # print("sys.argv[3]", sys.argv[3])
     print("\033[92m" + "[INFO] combined_frame_dir", combined_frame_dir)
     print("\033[92m" + "[INFO] combined_gif_dir", combined_gif_dir)
 
     createFrames(sys.argv[1:])
     mergeImagesToGif(combined_frame_dir, combined_gif_dir, int(sys.argv[3]))
     gifToMp4(combined_gif_dir)
+
     print("\033[95m" + "CONVERSION COMPLETE")
