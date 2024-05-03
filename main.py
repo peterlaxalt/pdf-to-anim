@@ -65,9 +65,11 @@ def mergeImagesToGif(folder_path, gif_path, duration):
     print("\033[92m" + "[INFO] gif_path:", gif_path)
     print("\033[92m" + "[INFO] duration:", duration)
     print("\033[92m" + "os.listdir(folder_path):", sorted(os.listdir(folder_path)))
+
+    sortedDirectory = sorted(os.listdir(folder_path))
     images = []
 
-    for filename in os.listdir(folder_path):
+    for filename in sortedDirectory:
         print("\033[92m" + "[INFO] Checking file: " + filename)
         file_path = os.path.join(folder_path, filename)
 
@@ -119,9 +121,7 @@ if __name__ == "__main__":
     print("\033[92m" + "[INFO] combined_frame_dir", combined_frame_dir)
     print("\033[92m" + "[INFO] combined_gif_dir", combined_gif_dir)
 
-    # imageio.help("gif")
-
-    # createFrames(sys.argv[1:])
-    # mergeImagesToGif(combined_frame_dir, combined_gif_dir, int(sys.argv[3]))
+    createFrames(sys.argv[1:])
+    mergeImagesToGif(combined_frame_dir, combined_gif_dir, int(sys.argv[3]))
     gifToMp4(combined_gif_dir)
     print("\033[95m" + "CONVERSION COMPLETE")
